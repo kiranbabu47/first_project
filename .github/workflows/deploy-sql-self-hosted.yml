@@ -1,0 +1,32 @@
+name: Deploy SQL to PostgreSQL VM (Self-hosted runner)
+
+on:
+  push:
+    paths:
+      - 'sql/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure psql client is installed
+        run: |
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y postgresql-client
+          fi
+
+      - name: Apply SQL scripts to demo DB
+        env:
+          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          mkdir -p /tmp/sql_deploy
+          cp -r sql/* /tmp/sql_deploy/ || true
+          for f in /tmp/sql_deploy/*.sql; do
+            [ -e "$f" ] || continue
+            echo "Applying $f"
+            psql -h 192.168.29.177 -U "${{ secrets.DB_USER }}" -d demo -f "$f"
+          done
