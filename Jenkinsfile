@@ -36,7 +36,7 @@ pipeline {
                 sshagent(['oracle-primary-ssh']) {
                     sh '''
                         echo "========================================"
-                        echo "Running Oracle health check..."
+                        echo "Running Oracle db  health check..."
                         echo "========================================"
 
                         scp -o StrictHostKeyChecking=no \
